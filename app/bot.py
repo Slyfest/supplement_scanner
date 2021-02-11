@@ -1,6 +1,7 @@
 import logging
 import os
 import uuid
+from typing import Dict, List
 
 from dotenv import load_dotenv
 from numpy import disp, load
@@ -25,6 +26,24 @@ def help_command(update: Update, context: CallbackContext) -> None:
     update.message.reply_text("Help!")
 
 
+def prepare_entry_text(supplement: Dict) -> str:
+    return f"{supplement['full_title']} ({supplement['category']}): {supplement['effect']}"
+
+
+def process_reply(update: Update, supplements: List[dict]) -> None:
+    if supplements == []:
+        update.message.reply_text("Ничего не обнаружено. Попробуйте другое изображение!")
+    else:
+        for sup in supplements:
+            update.message.reply_text(prepare_entry_text(sup))
+
+
+def prepare_summary_message(num_harmful: int) -> str:
+    if num_harmful > 0:
+        return f"Обнаружены потенциально опасные ингредиенты ({num_harmful})!"
+    return "Опасных ингредиентов не обнаружено!"
+
+
 def photo(update: Update, context: CallbackContext) -> None:
     user = update.message.from_user
     photo_file = update.message.photo[-1].get_file()
@@ -34,19 +53,10 @@ def photo(update: Update, context: CallbackContext) -> None:
 
     update.message.reply_text("Извлекаю ингредиенты...")
     supplements = extract_supplements(f"images/{photo_id}.jpg")
-    if supplements == []:
-        update.message.reply_text("Ничего не обнаружено. Попробуйте другое изображение!")
-    else:
-        for sup in supplements:
-            update.message.reply_text(f"{sup['full_title']} ({sup['category']}): {sup['effect']}")
+    process_reply(update, supplements)
 
-        num_harmful = sum(x["is_harmful"] for x in supplements)
-        if num_harmful > 0:
-            update.message.reply_text(
-                f"Обнаружены потенциально опасные ингредиенты ({num_harmful})!"
-            )
-        else:
-            update.message.reply_text("Опасных ингредиентов не обнаружено!")
+    num_harmful = sum(x["is_harmful"] for x in supplements)
+    update.message.reply_text(prepare_summary_message(num_harmful))
     os.remove(f"images/{photo_id}.jpg")
 
 
