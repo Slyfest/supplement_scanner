@@ -44,10 +44,21 @@ def prepare_output(
     return pd.concat([titles_df, e_titles_df]).to_dict("records")
 
 
-def extract_supplements(image_path: str) -> pd.DataFrame:
+def extract_supplements_from_image(image_path: str) -> pd.DataFrame:
     df, title_processor, e_title_processor = load_data()
     image = load_image(image_path)
     text = extract_text_from_image(image)
+
+    found_titles = title_processor.extract_keywords(text)
+    found_e_titles = e_title_processor.extract_keywords(text)
+
+    result = prepare_output(found_titles, found_e_titles, df)
+    return result
+
+
+def extract_supplements_from_text(text: str) -> pd.DataFrame:
+    text = prepare_text(text)
+    df, title_processor, e_title_processor = load_data()
 
     found_titles = title_processor.extract_keywords(text)
     found_e_titles = e_title_processor.extract_keywords(text)
