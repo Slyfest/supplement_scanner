@@ -83,6 +83,7 @@ def text(update: Update, context: CallbackContext) -> None:
 
 def main():
     TOKEN = os.getenv("TELEGRAM_TOKEN")
+    PORT = os.getenv("PORT")
 
     updater = Updater(TOKEN, use_context=True)
     dispatcher = updater.dispatcher
@@ -92,7 +93,8 @@ def main():
     dispatcher.add_handler(MessageHandler(Filters.photo & ~Filters.command, photo))
     dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, text))
 
-    updater.start_polling()
+    updater.start_webhook(listen="0.0.0.0", port=int(PORT), url_path=TOKEN)
+    updater.bot.set_webhook("https://ingredient-scanbot.herokuapp.com/" + TOKEN)
     updater.idle()
 
 
