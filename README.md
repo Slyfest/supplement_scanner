@@ -1,4 +1,4 @@
-# Ingredient Scanner
+# Supplement Scanner
 
 Telegram bot that scans food products for potentially harmful supplements.
 This bot can extract ingredients from label images and user-provided texts.
